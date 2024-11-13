@@ -1,0 +1,10 @@
+{
+    "domain": "plant_manager",
+    "name": "Plant Manager",
+    "documentation": "https://github.com/yourusername/ha-plant-manager",
+    "dependencies": ["input_boolean", "calendar"],
+    "codeowners": ["@yourusername"],
+    "requirements": [],
+    "version": "1.0.0",
+    "iot_class": "local_push"
+}

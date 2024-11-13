@@ -1,0 +1,49 @@
+- alias: NFC Plant Watered Tag Scanned
+  description: Turn off input boolean for plant care based on NFC tag scan
+  trigger:
+    - event_type: tag_scanned
+      platform: event
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ is_state('input_boolean.' + plant_name + '_needs_water', 'on') }}
+          sequence:
+            - target:
+                entity_id: input_boolean.{{ plant_name }}_needs_water
+              service: input_boolean.turn_off
+    - service: logbook.log
+      data:
+        name: Plant Watering Log
+        message: "{{ plant_name | replace('_', ' ') | title }} was watered"
+  variables:
+    plant_name: >-
+      {{ trigger.event.data.name | lower | replace(' watered tag', '') | replace(' ', '_') }}
+  mode: single
+
+- alias: Plant Calendar Event - Set Water Needed
+  description: Turn on plant watering reminder boolean based on calendar events
+  trigger:
+    - platform: calendar
+      entity_id: calendar.plants
+      event: start
+      offset: "0:0:0"
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ 'input_boolean.' + plant_name + '_needs_water' in states }}"
+          sequence:
+            - target:
+                entity_id: input_boolean.{{ plant_name }}_needs_water
+              service: input_boolean.turn_on
+    - service: logbook.log
+      data:
+        name: Plant Care Reminder
+        message: >-
+          Watering reminder created for {{ plant_name | replace('_', ' ') | title }}
+  variables:
+    plant_name: "{{ trigger.calendar_event.summary | lower | trim | replace(' ', '_') }}"
+  mode: single
+  
